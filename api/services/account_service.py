@@ -857,6 +857,7 @@ class RegisterService:
         :param password: password
         :param ip_address: ip address
         """
+        # NOTE: 程序初始化时，调用 setup 方法，创建一个管理员账号，并创建一个租户，并设置为当前租户
         try:
             # Register
             account = AccountService.create_account(

@@ -153,6 +153,11 @@ class AppService:
 
         db.session.commit()
 
+        # NOTE: 创建app时，触发app_was_created信号，用于创建app的安装记录
+        # 在 blinker 中，send 方法有两个主要参数：
+        # 1. 第一个参数是信号对象，表示要发送的信号。
+        # 2. 第二个参数是可选的，用于传递信号的参数。
+        # 在这个例子中，app_was_created 信号被发送，app 对象作为信号的接收者，account 对象作为信号的参数。
         app_was_created.send(app, account=account)
 
         return app

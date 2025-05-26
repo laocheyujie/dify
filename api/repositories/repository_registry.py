@@ -35,6 +35,7 @@ def register_repositories() -> None:
     # Check storage type and register appropriate implementation
     if workflow_node_execution_storage == STORAGE_TYPE_RDBMS:
         # Register SQLAlchemy implementation for RDBMS storage
+        # NOTE: 注册 create_workflow_node_execution_repository 工厂函数
         logger.info("Registering WorkflowNodeExecution repository with RDBMS storage")
         RepositoryFactory.register_workflow_node_execution_factory(create_workflow_node_execution_repository)
     elif workflow_node_execution_storage == STORAGE_TYPE_HYBRID:
@@ -51,6 +52,7 @@ def register_repositories() -> None:
 def create_workflow_node_execution_repository(params: Mapping[str, Any]) -> SQLAlchemyWorkflowNodeExecutionRepository:
     """
     Create a WorkflowNodeExecutionRepository instance using SQLAlchemy implementation.
+    NOTE: 这个工厂函数会创建基于 SQLAlchemy 的 WorkflowNodeExecutionRepository 实现
 
     This factory function creates a repository for the RDBMS storage type.
 

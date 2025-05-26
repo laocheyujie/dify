@@ -11,6 +11,36 @@ from pydantic import BaseModel
 from core.helper.position_helper import sort_to_dict_by_position_map
 
 
+"""
+NOTE:
+这个扩展系统的工作流程是：
+1. 目录结构要求：
+    - 每个扩展必须是一个子目录
+    - 子目录中必须包含与目录名相同的 Python 文件
+    - 非内置扩展必须包含 schema.json 配置文件
+    - 内置扩展可以包含 __builtin__ 文件来指定显示位置
+2. 扩展加载过程：
+    - 扫描指定目录下的所有子目录
+    - 检查每个子目录是否符合扩展要求
+    - 动态加载扩展的 Python 模块
+    - 查找继承自 Extensible 的扩展类
+    - 加载扩展的配置信息
+    - 创建扩展实例并返回
+3. 扩展类型：
+    - 内置扩展：系统自带的扩展，通过 __builtin__ 文件标识
+    - 自定义扩展：用户添加的扩展，需要提供 schema.json 配置文件
+4. 配置管理：
+    - 通过 schema.json 定义扩展的配置表单
+    - 支持扩展的标签和显示位置配置
+    - 使用 Pydantic 进行数据验证
+5. 这种设计使得系统可以：
+    - 灵活地添加和移除扩展
+    - 自动发现和加载扩展
+    - 支持扩展的配置管理
+    - 区分内置扩展和自定义扩展
+    - 控制扩展的显示顺序
+"""
+
 class ExtensionModule(enum.Enum):
     MODERATION = "moderation"
     EXTERNAL_DATA_TOOL = "external_data_tool"

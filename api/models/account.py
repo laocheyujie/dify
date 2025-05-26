@@ -20,6 +20,9 @@ class AccountStatus(enum.StrEnum):
 
 
 class Account(UserMixin, Base):
+    # NOTE: UserMixin 是 Flask-Login 提供的用户基类，提供了一些默认的认证方法和属性
+    # 这里继承了 UserMixin，所以 Account 对象就具备了 is_authenticated、is_active、is_anonymous 等属性
+    # 这些属性在 Flask-Login 中用于判断用户是否登录、是否活跃、是否匿名等
     __tablename__ = "accounts"
     __table_args__ = (db.PrimaryKeyConstraint("id", name="account_pkey"), db.Index("account_email_idx", "email"))
 

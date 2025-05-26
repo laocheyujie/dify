@@ -11,9 +11,11 @@ from typing import Any, Literal, Optional, cast
 from core.repository.workflow_node_execution_repository import WorkflowNodeExecutionRepository
 
 # Type for factory functions - takes a dict of parameters and returns any repository type
+# NOTE: RepositoryFactoryFunc 是一个通用的工厂函数类型，接收一个参数字典，返回任意类型的仓库实例
 RepositoryFactoryFunc = Callable[[Mapping[str, Any]], Any]
 
 # Type for workflow node execution factory function
+# NOTE: WorkflowNodeExecutionFactoryFunc 是专门用于创建工作流节点执行仓库的工厂函数类型
 WorkflowNodeExecutionFactoryFunc = Callable[[Mapping[str, Any]], WorkflowNodeExecutionRepository]
 
 # Repository type literals
@@ -29,6 +31,7 @@ class RepositoryFactory:
     """
 
     # Dictionary to store factory functions
+    # NOTE: 工厂函数字典
     _factory_functions: dict[str, RepositoryFactoryFunc] = {}
 
     @classmethod

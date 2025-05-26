@@ -40,6 +40,7 @@ def init_app(app: DifyApp):
         force=True,
     )
     # Disable propagation for noisy loggers to avoid duplicate logs
+    # NOTE: 不让这个日志记录器的日志消息向上传递到根日志记录器。这样做的目的通常是为了避免重复日志输出
     logging.getLogger("sqlalchemy.engine").propagate = False
     log_tz = dify_config.LOG_TZ
     if log_tz:
@@ -58,6 +59,8 @@ def init_app(app: DifyApp):
 
 
 def get_request_id():
+    # NOTE: 为每个请求生成唯一的请求 ID
+    # flask.g 是 Flask 提供的全局对象，它在每个请求中是独立的，可以存储该请求特有的数据
     if getattr(flask.g, "request_id", None):
         return flask.g.request_id
 

@@ -71,6 +71,7 @@ class DifyConfig(
     # **Before using, please contact business@dify.ai by email to inquire about licensing matters.**
     EnterpriseFeatureConfig,
 ):
+    # NOTE: 实例化时会自动读取.env文件
     model_config = SettingsConfigDict(
         # read from dotenv format config file
         env_file=".env",
@@ -93,6 +94,7 @@ class DifyConfig(
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # NOTE: settings_customise_sources 用于自定义配置源的加载顺序
         return (
             init_settings,
             env_settings,

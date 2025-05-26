@@ -71,6 +71,7 @@ class LoginApi(Resource):
                 invitee_email = data.get("email") if data else None
                 if invitee_email != args["email"]:
                     raise InvalidEmailError()
+                # NOTE: 1. 调用 AccountService.authenticate 验证账号和密码
                 account = AccountService.authenticate(args["email"], args["password"], args["invite_token"])
             else:
                 account = AccountService.authenticate(args["email"], args["password"])
@@ -92,7 +93,7 @@ class LoginApi(Resource):
                 "result": "fail",
                 "data": "workspace not found, please contact system admin to invite you to join in a workspace",
             }
-
+        # NOTE: 2. 调用 AccountService.login 登录账号获取 token
         token_pair = AccountService.login(account=account, ip_address=extract_remote_ip(request))
         AccountService.reset_login_error_rate_limit(args["email"])
         return {"result": "success", "data": token_pair.model_dump()}

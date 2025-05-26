@@ -13,6 +13,7 @@ _default = HiddenValue()
 
 class RecyclableContextVar(Generic[T]):
     """
+    在多线程 Web 服务器中，如何确保每个请求都能获得正确的上下文信息，而不会受到线程重用的影响。
     RecyclableContextVar is a wrapper around ContextVar
     It's safe to use in gunicorn with thread recycling, but features like `reset` are not available for now
 
@@ -24,7 +25,7 @@ class RecyclableContextVar(Generic[T]):
     @classmethod
     def increment_thread_recycles(cls):
         try:
-            recycles = cls._thread_recycles.get()
+            recycles = cls._thread_recycles.get()  # 当前线程被重用的次数
             cls._thread_recycles.set(recycles + 1)
         except LookupError:
             cls._thread_recycles.set(0)
@@ -41,6 +42,7 @@ class RecyclableContextVar(Generic[T]):
 
         # check if thread is recycled and should be updated
         if thread_recycles < self_updates:
+            # 当前线程被重用的次数小于 self_updates，说明当前上下文是有效的
             return self._context_var.get()
         else:
             # thread_recycles >= self_updates, means current context is invalid

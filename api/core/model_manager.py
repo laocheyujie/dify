@@ -360,6 +360,7 @@ class ModelInstance:
 
     def _round_robin_invoke(self, function: Callable[..., Any], *args, **kwargs) -> Any:
         """
+        NOTE: 用于实现负载均衡的模型调用机制
         Round-robin invoke
         :param function: function to invoke
         :param args: function args

@@ -7,6 +7,7 @@ from models.model import Site
 def handle(sender, **kwargs):
     """Create site record when an app is created."""
     app = sender
+    # NOTE: 在信号处理器中，可以通过 kwargs 获取信号发送时传递的参数
     account = kwargs.get("account")
     if account is not None:
         site = Site(

@@ -14,8 +14,10 @@ def init_app(app: DifyApp):
         from core.model_runtime.errors.invoke import InvokeRateLimitError
 
         def before_send(event, hint):
+            # NOTE: 回调函数，用于在发送错误到 Sentry 之前进行过滤
             if "exc_info" in hint:
                 exc_type, exc_value, tb = hint["exc_info"]
+                # 如果错误信息中包含 defaultErrorResponse，则不会发送到 Sentry
                 if parse_error.defaultErrorResponse in str(exc_value):
                     return None
 
@@ -24,6 +26,7 @@ def init_app(app: DifyApp):
         sentry_sdk.init(
             dsn=dify_config.SENTRY_DSN,
             integrations=[FlaskIntegration(), CeleryIntegration()],
+            # 错误忽略列表
             ignore_errors=[
                 HTTPException,
                 ValueError,
@@ -32,9 +35,9 @@ def init_app(app: DifyApp):
                 InvokeRateLimitError,
                 parse_error.defaultErrorResponse,
             ],
-            traces_sample_rate=dify_config.SENTRY_TRACES_SAMPLE_RATE,
-            profiles_sample_rate=dify_config.SENTRY_PROFILES_SAMPLE_RATE,
-            environment=dify_config.DEPLOY_ENV,
-            release=f"dify-{dify_config.CURRENT_VERSION}-{dify_config.COMMIT_SHA}",
+            traces_sample_rate=dify_config.SENTRY_TRACES_SAMPLE_RATE,                  # 追踪采样率
+            profiles_sample_rate=dify_config.SENTRY_PROFILES_SAMPLE_RATE,              # 性能分析采样率
+            environment=dify_config.DEPLOY_ENV,                                        # 部署环境
+            release=f"dify-{dify_config.CURRENT_VERSION}-{dify_config.COMMIT_SHA}",    # 版本信息
             before_send=before_send,
         )

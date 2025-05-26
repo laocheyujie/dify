@@ -53,6 +53,7 @@ class RetrievalService:
         exceptions: list[str] = []
 
         # Optimize multithreading with thread pools
+        # NOTE: 使用多线程来处理召回
         with ThreadPoolExecutor(max_workers=dify_config.RETRIEVAL_SERVICE_EXECUTORS) as executor:  # type: ignore
             futures = []
             if retrieval_method == "keyword_search":
