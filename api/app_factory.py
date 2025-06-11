@@ -63,7 +63,7 @@ def initialize_extensions(app: DifyApp):
         ext_timezone,
         ext_warnings,
     )
-    # cdg:从extensions模块中导入各子模块配置，各子模块的内容及其组织方式都非常值得关注。
+    # NOTE:从extensions模块中导入各子模块配置，各子模块的内容及其组织方式都非常值得关注。
     # 将这些功能模块单独组织，然后在Flask应用程序中使用这些功能，增强应用的能力和灵活性。
     # 各模块的大概功能如下：
     # ext_blueprints：用于组织Flask应用的蓝图。
@@ -96,7 +96,7 @@ def initialize_extensions(app: DifyApp):
     for ext in extensions:
         short_name = ext.__name__.split(".")[-1]
         is_enabled = ext.is_enabled() if hasattr(ext, "is_enabled") else True
-        # cdg:如果模块未启用，而且在debug模式下，忽略该模块，不初始化到Flask应用程序中
+        # NOTE:如果模块未启用，而且在debug模式下，忽略该模块，不初始化到Flask应用程序中
         if not is_enabled:
             if dify_config.DEBUG:
                 logging.info(f"Skipped {short_name}")
@@ -110,7 +110,7 @@ def initialize_extensions(app: DifyApp):
 
 
 def create_migrations_app():
-    # cdg:定义一个名为create_migrations_app的函数，目的是创建并返回一个配置好的Flask应用实例，专门用于数据库迁移
+    # NOTE:定义一个名为create_migrations_app的函数，目的是创建并返回一个配置好的Flask应用实例，专门用于数据库迁移
     app = create_flask_app_with_configs()
     from extensions import ext_database, ext_migrate
 
