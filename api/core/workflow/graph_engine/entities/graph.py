@@ -62,6 +62,7 @@ class Graph(BaseModel):
         :param root_node_id: root node id
         :return: graph
         """
+        # NOTE: 工作流节点图的初始化
         # edge configs
         edge_configs = graph_config.get("edges")
         if edge_configs is None:

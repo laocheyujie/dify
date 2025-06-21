@@ -89,6 +89,8 @@ class AccountService:
 
     @staticmethod
     def _store_refresh_token(refresh_token: str, account_id: str) -> None:
+        # NOTE: 该方法的作用是将刷新令牌和账户 ID 以键值对的形式存储到 Redis 中，并设置过期时间，以便后续的身份验证和管理
+        # 当用户登录或需要刷新令牌时，可以快速查找这些信息
         redis_client.setex(AccountService._get_refresh_token_key(refresh_token), REFRESH_TOKEN_EXPIRY, account_id)
         redis_client.setex(
             AccountService._get_account_refresh_token_key(account_id), REFRESH_TOKEN_EXPIRY, refresh_token
@@ -130,6 +132,7 @@ class AccountService:
 
     @staticmethod
     def get_account_jwt_token(account: Account) -> str:
+        # NOTE: 该方法主要是生成 jwt token
         exp_dt = datetime.now(UTC) + timedelta(minutes=dify_config.ACCESS_TOKEN_EXPIRE_MINUTES)
         exp = int(exp_dt.timestamp())
         payload = {
@@ -145,6 +148,11 @@ class AccountService:
     @staticmethod
     def authenticate(email: str, password: str, invite_token: Optional[str] = None) -> Account:
         """authenticate account with email and password"""
+        # NOTE: 该方法实现了基于邮箱和密码的账户认证流程，包括账户查询、状态检查、密码哈希、首次登录处理和状态更新
+        # 如果所有条件都满足，最后将返回一个有效的 Account 对象
+        # NOTE: 生成 16 字节的随机盐值，并将其编码为 Base64 字符串，以便后续用于密码哈希
+        # 对用户提供的密码进行哈希处理，使用生成的盐值，然后将哈希结果编码为 Base64 字符串
+        # 将哈希后的密码和盐值存储到账户对象
 
         account = db.session.query(Account).filter_by(email=email).first()
         if not account:
@@ -363,6 +371,7 @@ class AccountService:
 
     @staticmethod
     def logout(*, account: Account) -> None:
+        # NOTE: 该方法用于用户登出操作，首先尝试从 Redis 中获取用户的刷新令牌，如果存在，则删除该令牌，以实现用户登出的效果
         refresh_token = redis_client.get(AccountService._get_account_refresh_token_key(account.id))
         if refresh_token:
             AccountService._delete_refresh_token(refresh_token.decode("utf-8"), account.id)
@@ -515,6 +524,7 @@ class AccountService:
 
     @staticmethod
     def reset_login_error_rate_limit(email: str):
+        # NOTE: 该方法用于重置指定邮箱的登录错误次数限制，通过删除与该邮箱相关的 Redis 键实现
         key = f"login_error_rate_limit:{email}"
         redis_client.delete(key)
 
@@ -1075,5 +1085,6 @@ class RegisterService:
 
 
 def _generate_refresh_token(length: int = 64):
+    # NOTE: 该方法主要是生成 refresh token
     token = secrets.token_hex(length)
     return token

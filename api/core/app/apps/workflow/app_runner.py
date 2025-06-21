@@ -71,6 +71,7 @@ class WorkflowAppRunner(WorkflowBasedAppRunner):
             workflow_callbacks.append(WorkflowLoggingCallback())
 
         # if only single iteration run is requested
+        # NOTE: 1.5.1 根据节点信息构建graph
         if self.application_generate_entity.single_iteration_run:
             # if only single iteration run is requested
             graph, variable_pool = self._get_graph_and_variable_pool_of_single_iteration(
@@ -109,6 +110,7 @@ class WorkflowAppRunner(WorkflowBasedAppRunner):
             graph = self._init_graph(graph_config=workflow.graph_dict)
 
         # RUN WORKFLOW
+        # NOTE: 1.5.2 依次运行各节点，把结果包成对应Event并放进queue_manager
         workflow_entry = WorkflowEntry(
             tenant_id=workflow.tenant_id,
             app_id=workflow.app_id,

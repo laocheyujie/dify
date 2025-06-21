@@ -24,6 +24,7 @@ class Jieba(BaseKeyword):
         self._config = KeywordTableConfig()
 
     def create(self, texts: list[Document], **kwargs) -> BaseKeyword:
+        # NOTE: 关键词检索-词表构建
         lock_name = "keyword_indexing_lock_{}".format(self.dataset.id)
         with redis_client.lock(lock_name, timeout=600):
             keyword_table_handler = JiebaKeywordTableHandler()
@@ -193,6 +194,7 @@ class Jieba(BaseKeyword):
         return keyword_table
 
     def _retrieve_ids_by_query(self, keyword_table: dict, query: str, k: int = 4):
+        # NOTE: 关键词召回
         keyword_table_handler = JiebaKeywordTableHandler()
         keywords = keyword_table_handler.extract_keywords(query)
 

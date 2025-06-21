@@ -13,6 +13,8 @@ from services.feature_service import FeatureService
 
 
 def validate_jwt_token(view=None):
+    # NOTE: 用于在调用视图函数之前验证 JWT
+    # 它会解码 JWT，提取出相关的用户信息，并将其传递给视图函数
     def decorator(view):
         @wraps(view)
         def decorated(*args, **kwargs):

@@ -64,6 +64,7 @@ class ChatAppRunner(AppRunner):
         memory = None
         if application_generate_entity.conversation_id:
             # get memory of conversation (read-only)
+            # NOTE: 2.5.1 读取历史对话信息（如果存在）
             model_instance = ModelInstance(
                 provider_model_bundle=application_generate_entity.model_conf.provider_model_bundle,
                 model=application_generate_entity.model_conf.model,
@@ -74,6 +75,7 @@ class ChatAppRunner(AppRunner):
         # organize all inputs and template to prompt messages
         # Include: prompt template, inputs, query(optional), files(optional)
         #          memory(optional)
+        # NOTE: 2.5.2 组织完整的 prompt
         prompt_messages, stop = self.organize_prompt_messages(
             app_record=app_record,
             model_config=application_generate_entity.model_conf,
@@ -86,6 +88,7 @@ class ChatAppRunner(AppRunner):
         )
 
         # moderation
+        # NOTE: 2.5.3 对输入进行安全审核（方式为关键词、API、Openai服务，用户选择）
         try:
             # process sensitive_word_avoidance
             _, inputs, query = self.moderation_for_inputs(
@@ -108,6 +111,7 @@ class ChatAppRunner(AppRunner):
 
         if query:
             # annotation reply
+            # NOTE: 2.5.4 如果开启标注回复，则通过 AnnotationReplyFeature 从数据库中查询答案，并跳到handle response那一步
             annotation_reply = self.query_app_annotations_to_reply(
                 app_record=app_record,
                 message=message,
@@ -134,6 +138,7 @@ class ChatAppRunner(AppRunner):
         # fill in variable inputs from external data tools if exists
         external_data_tools = app_config.external_data_variables
         if external_data_tools:
+            # NOTE: 2.5.5 如果存在外部数据工具，则通过线程池并发获取数据
             inputs = self.fill_in_inputs_from_external_data_tools(
                 tenant_id=app_record.tenant_id,
                 app_id=app_record.id,
@@ -144,6 +149,7 @@ class ChatAppRunner(AppRunner):
 
         # get context from datasets
         context = None
+        # NOTE: 2.5.6 如果启用了数据库，则通过DatasetRetrieval进行内容召回
         if app_config.dataset and app_config.dataset.dataset_ids:
             hit_callback = DatasetIndexToolCallbackHandler(
                 queue_manager,
@@ -172,6 +178,7 @@ class ChatAppRunner(AppRunner):
         # reorganize all inputs and template to prompt messages
         # Include: prompt template, inputs, query(optional), files(optional)
         #          memory(optional), external data, dataset context(optional)
+        # NOTE: 2.5.7 再次组织 prompt（prompt template, inputs, query，memory, external data, dataset context）
         prompt_messages, stop = self.organize_prompt_messages(
             app_record=app_record,
             model_config=application_generate_entity.model_conf,
@@ -185,6 +192,7 @@ class ChatAppRunner(AppRunner):
         )
 
         # check hosting moderation
+        # NOTE: 2.5.8 内容审核（text-moderation-stable）
         hosting_moderation_result = self.check_hosting_moderation(
             application_generate_entity=application_generate_entity,
             queue_manager=queue_manager,
@@ -195,9 +203,11 @@ class ChatAppRunner(AppRunner):
             return
 
         # Re-calculate the max tokens if sum(prompt_token +  max_tokens) over model token limit
+        # NOTE: 2.5.9 再次计算tokens是否满足要求
         self.recalc_llm_max_tokens(model_config=application_generate_entity.model_conf, prompt_messages=prompt_messages)
 
         # Invoke model
+        # NOTE: 2.5.10 实例化LLM，将LLM结果包成对应 Event 并放进 queue_manager
         model_instance = ModelInstance(
             provider_model_bundle=application_generate_entity.model_conf.provider_model_bundle,
             model=application_generate_entity.model_conf.model,

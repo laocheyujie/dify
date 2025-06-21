@@ -38,25 +38,38 @@ class FetchUserArg(BaseModel):
 
 
 def validate_app_token(view: Optional[Callable] = None, *, fetch_user_arg: Optional[FetchUserArg] = None):
+    # NOTE: 装饰器函数，用于验证应用程序的 API 令牌，检查相关的应用和租户状态，并根据需要提取用户信息，为后续的视图函数提供必要的上下文
+    # 接受一个可选的视图函数 view 和一个关键字参数 fetch_user_arg
+    # fetch_user_arg 是一个可选参数，用于指定如何从请求中获取用户 ID
     def decorator(view_func):
+        # NOTE: 使用 functools.wraps 保留原始视图函数的元数据
         @wraps(view_func)
         def decorated_view(*args, **kwargs):
+            # NOTE: 调用函数 validate_and_get_api_token 验证并获取 API 令牌，类型为 “app”
             api_token = validate_and_get_api_token("app")
 
+            # NOTE: 查询数据库，获取与 api_token 中的 app_id 关联的应用模型 app_model
             app_model = db.session.query(App).filter(App.id == api_token.app_id).first()
             if not app_model:
+                # NOTE: 如果应用模型不存在，抛出 Forbidden 异常，表示应用不存在
                 raise Forbidden("The app no longer exists.")
 
             if app_model.status != "normal":
+                # NOTE: 检查应用的状态是否为正常。如果不是，则抛出 Forbidden 异常，说明应用状态异常
                 raise Forbidden("The app's status is abnormal.")
 
             if not app_model.enable_api:
+                # NOTE: 检查应用的 API 服务是否启用。如果禁用，则抛出 Forbidden 异常
                 raise Forbidden("The app's API service has been disabled.")
 
+            # NOTE: 查询与 app_model 相关联的租户模型 tenant，并检查租户的状态
             tenant = db.session.query(Tenant).filter(Tenant.id == app_model.tenant_id).first()
             if tenant is None:
+                # NOTE: 如果租户模型不存在，抛出 ValueError 异常，说明租户不存在
                 raise ValueError("Tenant does not exist.")
+            
             if tenant.status == TenantStatus.ARCHIVE:
+                # NOTE: 如果租户状态为归档，则抛出 Forbidden 异常，说明租户状态异常
                 raise Forbidden("The workspace's status is archived.")
 
             tenant_account_join = (
@@ -80,25 +93,34 @@ def validate_app_token(view: Optional[Callable] = None, *, fetch_user_arg: Optio
             else:
                 raise Unauthorized("Tenant does not exist.")
 
+            # NOTE: 将 app_model 添加到 kwargs 中，以便传递给被装饰的视图函数
             kwargs["app_model"] = app_model
 
             if fetch_user_arg:
+                # NOTE: 如果 fetch_user_arg 被提供，根据其 fetch_from 属性从不同来源获取用户 ID
                 if fetch_user_arg.fetch_from == WhereisUserArg.QUERY:
+                    # NOTE: 如果是查询参数（QUERY），从请求参数中获取
                     user_id = request.args.get("user")
                 elif fetch_user_arg.fetch_from == WhereisUserArg.JSON:
+                    # NOTE: 如果是 JSON 体（JSON），从请求 JSON 中获取
                     user_id = request.get_json().get("user")
                 elif fetch_user_arg.fetch_from == WhereisUserArg.FORM:
+                    # NOTE: 如果是表单数据（FORM），从请求表单中获取
                     user_id = request.form.get("user")
                 else:
+                    # 如果没有指定来源，则 user_id 设置为 None
                     # use default-user
                     user_id = None
 
                 if not user_id and fetch_user_arg.required:
+                    # NOTE: 如果 user_id 不存在且 fetch_user_arg 指定了该参数是必需的，则抛出 ValueError
                     raise ValueError("Arg user must be provided.")
 
                 if user_id:
+                    # NOTE: 如果 user_id 存在，则将其转换为字符串
                     user_id = str(user_id)
 
+                # NOTE: 根据 app_model 和 user_id 创建或更新用户信息，并将结果存入 kwargs 中
                 kwargs["end_user"] = create_or_update_end_user_for_user_id(app_model, user_id)
 
             return view_func(*args, **kwargs)

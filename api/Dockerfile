@@ -1,4 +1,5 @@
 # base image
+# NOTE: 基础镜像，这种镜像较小，适合生产环境使用
 FROM python:3.12-slim-bookworm AS base
 
 WORKDIR /app/api
@@ -56,6 +57,7 @@ RUN \
 
 # Copy Python environment and packages
 ENV VIRTUAL_ENV=/app/api/.venv
+# NOTE: 从 packages 阶段复制安装好的 Python 依赖
 COPY --from=packages ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 

@@ -229,6 +229,7 @@ class GraphEngine:
         parent_parallel_start_node_id: Optional[str] = None,
         handle_exceptions: list[str] = [],
     ) -> Generator[GraphEngineEvent, None, None]:
+        # NOTE: 工作流节点图的运行过程
         parallel_start_node_id = None
         if in_parallel_id:
             parallel_start_node_id = start_node_id

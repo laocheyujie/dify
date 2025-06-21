@@ -98,6 +98,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
                 app_model=app_model, conversation_id=conversation_id, user=user
             )
         # get app model config
+        # NOTE: 2.1 读取配置信息
         app_model_config = self._get_app_model_config(app_model=app_model, conversation=conversation)
 
         # validate override model config
@@ -135,9 +136,11 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         )
 
         # get tracing instance
+        # NOTE: 2.2 初始化 trace_manager ，用于跟踪任务
         trace_manager = TraceQueueManager(app_id=app_model.id)
 
         # init application generate entity
+        # NOTE: 2.3 初始化 application_generate_entity ，用于存放运行所需要的信息
         application_generate_entity = ChatAppGenerateEntity(
             task_id=str(uuid.uuid4()),
             app_config=app_config,
@@ -161,6 +164,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         (conversation, message) = self._init_generate_records(application_generate_entity, conversation)
 
         # init queue manager
+        # NOTE: 2.4 初始化 queue_manager ，通过队列传输线程中的结果
         queue_manager = MessageBasedAppQueueManager(
             task_id=application_generate_entity.task_id,
             user_id=application_generate_entity.user_id,
@@ -171,6 +175,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         )
 
         # new thread
+        # NOTE: 2.5 启动线程，调用 _generate_worker
         worker_thread = threading.Thread(
             target=self._generate_worker,
             kwargs={
@@ -185,6 +190,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         worker_thread.start()
 
         # return response or stream generator
+        # NOTE: 2.6 调用 _handle_response
         response = self._handle_response(
             application_generate_entity=application_generate_entity,
             queue_manager=queue_manager,

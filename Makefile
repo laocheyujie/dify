@@ -1,9 +1,11 @@
 # Variables
+# NOTE: 定义变量 (Variables)
 DOCKER_REGISTRY=langgenius
 WEB_IMAGE=$(DOCKER_REGISTRY)/dify-web
 API_IMAGE=$(DOCKER_REGISTRY)/dify-api
 VERSION=latest
 
+# NOTE: 定义操作目标 (Targets)
 # Build Docker images
 build-web:
 	@echo "Building web Docker image: $(WEB_IMAGE):$(VERSION)..."
@@ -26,6 +28,7 @@ push-api:
 	docker push $(API_IMAGE):$(VERSION)
 	@echo "API Docker image pushed successfully: $(API_IMAGE):$(VERSION)"
 
+# NOTE: 定义组合目标 (Aggregate Targets)
 # Build all images
 build-all: build-web build-api
 
@@ -40,4 +43,9 @@ build-push-all: build-all push-all
 	@echo "All Docker images have been built and pushed."
 
 # Phony targets
+# NOTE: 定义伪目标，确保这些目标总是被执行，即使存在与目标同名的文件
+# make 命令通常用来处理文件依赖，如果有一个文件和目标同名，make 可能会跳过执行
+# .PHONY 告诉 make，像 build-web、push-api 这些名字并不是指代真实的文件，而是一些抽象的命令，所以无论如何都应该执行它们对应的指令
 .PHONY: build-web build-api push-web push-api build-all push-all build-push-all
+
+# NOTE: 用法: make build-push-all

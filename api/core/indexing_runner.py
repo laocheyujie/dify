@@ -687,6 +687,7 @@ class IndexingRunner:
         doc_language: str,
         process_rule: dict,
     ) -> list[Document]:
+        # NOTE: 并发建立向量化索引，通过线程池并发建立向量化索引
         # get embedding model instance
         embedding_model_instance = None
         if dataset.indexing_technique == "high_quality":

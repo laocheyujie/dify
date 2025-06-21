@@ -96,12 +96,14 @@ class WorkflowAppGenerator(BaseAppGenerator):
         )
 
         # convert to app config
+        # NOTE: 1.1 读取配置信息
         app_config = WorkflowAppConfigManager.get_app_config(
             app_model=app_model,
             workflow=workflow,
         )
 
         # get tracing instance
+        # NOTE: 1.2 初始化 trace_manager ，用于跟踪任务
         trace_manager = TraceQueueManager(
             app_id=app_model.id,
             user_id=user.id if isinstance(user, Account) else user.session_id,
@@ -109,6 +111,7 @@ class WorkflowAppGenerator(BaseAppGenerator):
 
         inputs: Mapping[str, Any] = args["inputs"]
         workflow_run_id = str(uuid.uuid4())
+        # NOTE: 1.3 初始化 application_generate_entity ，用于存放运行所需要的信息
         # init application generate entity
         application_generate_entity = WorkflowAppGenerateEntity(
             task_id=str(uuid.uuid4()),
@@ -166,6 +169,7 @@ class WorkflowAppGenerator(BaseAppGenerator):
         :param workflow_thread_pool_id: workflow thread pool id
         """
         # init queue manager
+        # NOTE: 1.4 初始化 queue_manager ，通过队列传输线程中的结果
         queue_manager = WorkflowAppQueueManager(
             task_id=application_generate_entity.task_id,
             user_id=application_generate_entity.user_id,
@@ -174,6 +178,7 @@ class WorkflowAppGenerator(BaseAppGenerator):
         )
 
         # new thread
+        # NOTE: 1.5 启动线程，调用 _generate_worker
         worker_thread = threading.Thread(
             target=self._generate_worker,
             kwargs={
@@ -188,6 +193,7 @@ class WorkflowAppGenerator(BaseAppGenerator):
         worker_thread.start()
 
         # return response or stream generator
+        # NOTE: 1.6 调用 _handle_response
         response = self._handle_response(
             application_generate_entity=application_generate_entity,
             workflow=workflow,
@@ -373,6 +379,7 @@ class WorkflowAppGenerator(BaseAppGenerator):
         :return:
         """
         # init generate task pipeline
+        # NOTE: 1.6.1 通过WorkflowAppGenerateTaskPipeline，依次从queue_manager中取出事件并根据这些事件生成相应的流响应
         generate_task_pipeline = WorkflowAppGenerateTaskPipeline(
             application_generate_entity=application_generate_entity,
             workflow=workflow,

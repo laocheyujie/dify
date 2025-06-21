@@ -7,10 +7,19 @@ def init_app(app: DifyApp):
 
     from flask_cors import CORS  # type: ignore
 
+    # NOTE: 控制台
     from controllers.console import bp as console_app_bp
+
+    # NOTE: 文件
     from controllers.files import bp as files_bp
+
+    # NOTE: 内部 API
     from controllers.inner_api import bp as inner_api_bp
+
+    # NOTE: 服务 API
     from controllers.service_api import bp as service_api_bp
+
+    # NOTE: Web
     from controllers.web import bp as web_bp
 
     CORS(
